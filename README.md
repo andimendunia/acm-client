@@ -1,6 +1,6 @@
 # Assembly Conveyor Monitoring Client App
 
-Pengumpulan Data Serial dan Komunikasi API dengan Python. Script Python ini menunjukkan cara mengumpulkan data serial dari Arduino Uno dan mengirimkannya ke endpoint API HTTP.
+Pengumpulan Data Serial dan Komunikasi API dengan Python. Script Python ini bertujuan untuk mengumpulkan data serial dari Arduino Uno dan mengirimkannya ke endpoint API HTTP.
 
 ## Persyaratan
 
