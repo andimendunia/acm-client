@@ -18,10 +18,6 @@ Pengumpulan Data Serial dan Komunikasi API dengan Python. Script Python ini menu
     - Instal pustaka Python yang diperlukan dengan menjalankan:
       
       ```bash
-      pip install pyserial pyserial
-      ```
-      
-      ```bash
       pip install pyserial requests
       ```
 
