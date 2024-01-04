@@ -14,12 +14,13 @@ baud_rate = 9600
 # Read configuration from JSON file
 with open('config.json', 'r') as config_file:
     config = json.load(config_file)
-    data_collection_duration = config.get("data_collection_duration_seconds", 5)
+    duration_seconds = config.get("duration_seconds", 60)
+    api_url = config.get("api_url", "http://localhost/api/ins-acm-metrics")
 
 def collect_data():
     data_list = []  # List to store received data
     start_time = time.time()  # Get the current time
-    while (time.time() - start_time) < data_collection_duration:
+    while (time.time() - start_time) < duration_seconds:
         line = ser.readline().decode().strip()
         data_list.append(line)  # Add received data to the list
         print(line)  # Print received data
@@ -33,24 +34,23 @@ while True:
         collected_data = collect_data()
 
         # Send data via HTTP API
-        api_endpoint = 'https://your-api-endpoint-here.com/data'  # Replace with your API endpoint
         payload = {'data': collected_data}
 
-        response = requests.post(api_endpoint, json=payload)
+        response = requests.post(api_url, json=payload)
         if response.status_code == 200:
-            print("Data sent successfully!")
+            print("Data terikirim")
             break  # Exit the loop if data sent successfully
 
     except KeyboardInterrupt:
-        print("Program stopped by the user.")
+        print("Program dihentikan oleh user.")
         break  # Exit the loop if stopped by the user
 
     except Exception as e:
         with open('error.log', 'a') as error_log:
-            error_log.write(f"An error occurred: {str(e)}\n")
+            error_log.write(f"Terjadi error: {str(e)}\n")
             error_log.write(f"Traceback: {traceback.format_exc()}\n")
-        print("An error occurred. Retrying in 1 minute...")
-        time.sleep(60)  # Wait for 5 seconds before retrying
+        print("Terjadi error. Mencoba lagi dalam 1 menit...")
+        time.sleep(60)  # Wait for 60 seconds before retrying
 
 # Close the serial connection when done
 ser.close()
