@@ -1,4 +1,7 @@
 {
-    "duration_seconds": 60,
-    "api_url": "http://172.70.52.150/api/ins-acm-metrics"
+    "api_url": "http://172.70.52.150/api/ins-acm-metrics",
+    "baud_rate": 9600,
+    "device_id": 1,
+    "duration_seconds": 5,
+    "serial_port": "COM2"
 }

@@ -3,28 +3,36 @@ import requests
 import time
 import json
 import traceback
-
-# Define the serial port (you might need to change this)
-# serial_port = '/dev/ttyUSB0'  # On Linux
-serial_port = 'COM11'  # On Windows (change to your port)
-
-# Define the baud rate (must match Arduino's baud rate)
-baud_rate = 9600
+import datetime
 
 # Read configuration from JSON file
 with open('config.json', 'r') as config_file:
     config = json.load(config_file)
-    duration_seconds = config.get("duration_seconds", 60)
-    api_url = config.get("api_url", "http://localhost/api/ins-acm-metrics")
+
+    api_url             = config.get("api_url", "http://localhost/api/ins-acm-metrics")
+    baud_rate           = config.get("baud_rate", 9600)
+    device_id           = config.get('device_id', 0)
+    duration_seconds    = config.get("duration_seconds", 60)
+    serial_port         = config.get('serial_port', 'COM1')
+
 
 def collect_data():
-    data_list = []  # List to store received data
+    data = []  # List to store received data
     start_time = time.time()  # Get the current time
     while (time.time() - start_time) < duration_seconds:
-        line = ser.readline().decode().strip()
-        data_list.append(line)  # Add received data to the list
-        print(line)  # Print received data
-    return data_list
+        now = datetime.datetime.now()
+        data_line = ser.readline().decode().strip()
+        data_list = data_line.split(",")
+        data_dict = {
+            "device_id": int(device_id),
+            "dt_client": now.strftime("%Y-%m-%d %H:%M:%S"),
+            "rate_min": int(data_list[0]),
+            "rate_max": int(data_list[1]),
+            "rate_act": int(data_list[2]),
+        }
+        data.append(data_dict)  # Add received data to the list
+        print(data_dict)  # Print received data
+    return data
 
 # Establish serial communication
 ser = serial.Serial(serial_port, baud_rate)
@@ -39,7 +47,8 @@ while True:
         response = requests.post(api_url, json=payload)
         if response.status_code == 200:
             print("Data terikirim")
-            break  # Exit the loop if data sent successfully
+            print(response.content)
+            # break  # Exit the loop if data sent successfully
 
     except KeyboardInterrupt:
         print("Program dihentikan oleh user.")
