@@ -3,5 +3,5 @@
     "baud_rate": 9600,
     "line": "A1",
     "duration_seconds": 5,
-    "serial_port": "COM2"
+    "serial_port": "COM10"
 }
