@@ -11,7 +11,7 @@ with open('config.json', 'r') as config_file:
 
     api_url             = config.get("api_url", "http://localhost/api/ins-acm-metrics")
     baud_rate           = config.get("baud_rate", 9600)
-    device_id           = config.get('device_id', 0)
+    line                = config.get('line', 0)
     duration_seconds    = config.get("duration_seconds", 60)
     serial_port         = config.get('serial_port', 'COM1')
 
@@ -24,7 +24,7 @@ def collect_data():
         data_line = ser.readline().decode().strip()
         data_list = data_line.split(",")
         data_dict = {
-            "device_id": int(device_id),
+            "line": line,
             "dt_client": now.strftime("%Y-%m-%d %H:%M:%S"),
             "rate_min": int(data_list[0]),
             "rate_max": int(data_list[1]),
