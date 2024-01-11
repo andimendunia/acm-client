@@ -45,9 +45,12 @@ while True:
         payload = {'data': collected_data}
 
         response = requests.post(api_url, json=payload)
+        # 200 artinya OK
         if response.status_code == 200:
             print("Data terikirim")
             print(response.content)
+        else:
+            print('Terjadi kesalahan pada server:' + response.status_code)
             # break  # Exit the loop if data sent successfully
 
     except KeyboardInterrupt:
