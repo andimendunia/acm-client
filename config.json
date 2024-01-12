@@ -1,5 +1,5 @@
 {
-    "api_url": "http://127.0.0.1:8000/api/ins-acm-metrics",
+    "api_url": "http://172.70.52.150/api/ins-acm-metrics",
     "baud_rate": 9600,
     "line": "E1",
     "duration_seconds": 300,

@@ -7,7 +7,7 @@ def simulate_serial_data(port, baudrate=9600, interval=1):
         ser = serial.Serial(port, baudrate)
         print(f"Simulating data on {port}. Press Ctrl+C to stop.")
         while True:
-            rate_act = random.randint(5, 150)
+            rate_act = random.randint(5, 99)
             data = f"7,100,{rate_act}\n".encode('utf-8')
             ser.write(data)
             print(f"Sent: {data.decode('utf-8').strip()}")
