@@ -3,5 +3,6 @@
     "baud_rate": 9600,
     "line": "E1",
     "duration_seconds": 300,
-    "serial_port": "COM3"
+    "serial_port": "COM3",
+    "sleep_seconds": 300
 }

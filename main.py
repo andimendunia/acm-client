@@ -2,7 +2,6 @@ import serial
 import requests
 import time
 import json
-import traceback
 import datetime
 
 # Read configuration from JSON file
@@ -14,10 +13,11 @@ with open('config.json', 'r') as config_file:
     line                = config.get('line', 'TEST')
     duration_seconds    = config.get('duration_seconds', 60)
     serial_port         = config.get('serial_port', 'COM1')
+    sleep_seconds       = config.get('sleep_seconds', 1)
 
 print('')
 print('-----------------------------------')
-print('Aplikasi main.py berjalan.')
+print('Program main.py berjalan.')
 print('-----------------------------------')
 print('')
 print('Berikut konfigurasi yang terbaca:')
@@ -27,6 +27,7 @@ print(' •  baud_rate        : ' + str(baud_rate))
 print(' •  line             : ' + str(line))
 print(' •  duration_seconds : ' + str(duration_seconds))
 print(' •  serial_port      : ' + str(serial_port))
+print(' •  sleep_seconds    : ' + str(sleep_seconds))
 print('')
 
 def collect_data():
@@ -44,53 +45,54 @@ def collect_data():
             'rate_act': int(data_list[2]),
         }
         data.append(data_dict)  # Add received data to the list
-        print(data_dict)  # Print received data
+        print(data_dict, end="\r")  # Print received data
     return data
-
-try:
-    # Establish serial communication
-    print('Membuka komunikasi serial...')
-    ser = serial.Serial(serial_port, baud_rate)
-except Exception as e:
-    print('')
-    print('Tidak dapat berkomunikasi dengan serial.')
-    print(str(e))
-    print('')
-    print('Program dihentikan, sampai jumpa.')
-    exit()
-
 
 while True:
     try:
-        print('Mendengar serial...')
-        collected_data = collect_data()
-        print('Data terkumpul: ' + str(len(collected_data)) )
-        
-        # Send data via HTTP API
-        payload = {'data': collected_data}
 
-        print('Mengirim ke server...')
+        print('Membuka komunikasi serial...')
+        ser = serial.Serial(serial_port, baud_rate)     
+        print('Mendengar serial...')
+        print('')
+
+        collected = collect_data()
+        print('\nJumlah data yang di dengar: ' + str(len(collected)) )
+
+        # Send last data via HTTP API
+        end = collected[-1:]
+        payload = {'data': end }
+        print('Menutup komunikasi serial...')
+        ser.close()
+
+        print('Mengirim data terakhir ke server...')
         response = requests.post(api_url, json=payload)
+
         # 200 artinya OK
         if response.status_code == 200:
             print('Balasan dari server: ' + str(response.content))
 
         else:
             print('Terjadi kesalahan pada server:' + str(response.status_code))
-            # break  # Exit the loop if data sent successfully
 
     except KeyboardInterrupt:
+        print('Menutup komunikasi serial...')
+        ser.close()
         print('Program dihentikan oleh user.')
         break  # Exit the loop if stopped by the user
 
     except Exception as e:
         with open('error.log', 'a') as error_log:
             error_log.write(f'Terjadi error: {str(e)}\n')
-            error_log.write(f'Traceback: {traceback.format_exc()}\n')
+        print('')
         print('Terjadi error: ' + str(e))
         print('')
-        print('Program tertidur selama satu menit...')
-        time.sleep(60)  # Wait for 60 seconds before retrying
 
-# Close the serial connection when done
-ser.close()
+        if 'ser' in locals():
+            if ser.is_open:
+                print('Menutup komunikasi serial...')
+                ser.close()
+        print('Program tertidur selama ' + str(sleep_seconds) + ' menit...')
+        time.sleep(sleep_seconds * 60)  # Wait before retrying
+        print('')
+        print('Melanjutkan program...')
