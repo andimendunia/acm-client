@@ -92,7 +92,7 @@ while True:
             if ser.is_open:
                 print('Menutup komunikasi serial...')
                 ser.close()
-        print('Program tertidur selama ' + str(sleep_seconds) + ' menit...')
-        time.sleep(sleep_seconds * 60)  # Wait before retrying
+        print('Program tertidur selama ' + str(sleep_seconds) + ' detik...')
+        time.sleep(sleep_seconds)  # Wait before retrying
         print('')
         print('Melanjutkan program...')
