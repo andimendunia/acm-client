@@ -14,7 +14,7 @@ with open('config.json', 'r') as config_file:
     device_id           = config.get('device_id', 'USB\\VID_1A86&PID_7523')
     line                = config.get('line', 'TEST')
     duration_seconds    = config.get('duration_seconds', 60)
-    serial_port         = config.get('serial_port', 'COM4')
+    serial_port         = config.get('serial_port', 'COM3')
     sleep_seconds       = config.get('sleep_seconds', 1)
 
 print('')
@@ -26,7 +26,7 @@ print('Berikut konfigurasi yang terbaca:')
 print('')
 print(' •  api_url          : ' + str(api_url))
 print(' •  baud_rate        : ' + str(baud_rate))
-print(' •  device_id        : ' + str(device_id))
+print(' •  device_id        : ' + str(device_id)) #test
 print(' •  line             : ' + str(line))
 print(' •  duration_seconds : ' + str(duration_seconds))
 print(' •  serial_port      : ' + str(serial_port))
@@ -55,9 +55,9 @@ def collect_data():
             print(data_dict, end="\r")  # Print received data
     return data
 
-
 def restart_device():
     subprocess.Popen(["pnputil", "/disable-device", "/deviceid", device_id])
+    time.sleep(10)
     subprocess.Popen(["pnputil", "/enable-device", "/deviceid", device_id])
 
 while True:
@@ -92,7 +92,7 @@ while True:
             else:
                 print('Terjadi kesalahan pada server:' + str(response.status_code))
 
-    except serial.SerialTimeoutException:
+    except serial.SerialTimeoutException: #test
         restart_device()
 
     except KeyboardInterrupt:
