@@ -71,11 +71,20 @@ def restart_device():
     time.sleep
     pass
 
+def user_quit():
+    if 'ser' in locals():
+        if ser.is_open:
+            print('Menutup komunikasi serial...')
+            ser.close()
+    print('Program dihentikan oleh user. Selamat tinggal!')
+    time.sleep(3)
+    quit()
+
 while True:
     try:
         if instance_id == "":
             print('Mendapatkan instance_id...')
-            print('')
+
             instance_id = get_instance_id()
             if instance_id == "":
                 raise ValueError("Gagal mendapatkan instance_id")
@@ -110,29 +119,29 @@ while True:
                 print('Balasan dari server: ' + str(response.content))
 
             else:
-                print('Terjadi kesalahan pada server:' + str(response.status_code))
+                print('Error (server):' + str(response.status_code))
+            print('')
 
     except serial.SerialTimeoutException: #test
         restart_device()
 
     except KeyboardInterrupt:
-        print('Menutup komunikasi serial...')
-        ser.close()
-        print('Program dihentikan oleh user.')
-        break  # Exit the loop if stopped by the user
+        user_quit()
 
     except Exception as e:
         with open('error.log', 'a') as error_log:
             error_log.write(f'{str(e)}\n')
-        print('')
-        print('Terjadi error: ' + str(e))
-        print('')
+        print('Error (lokal): ' + str(e))
 
         if 'ser' in locals():
             if ser.is_open:
                 print('Menutup komunikasi serial...')
                 ser.close()
         print('Program tertidur selama ' + str(sleep_seconds) + ' detik...')
-        time.sleep(sleep_seconds)  # Wait before retrying
+        try:
+            time.sleep(sleep_seconds)  # Wait before retrying
+        except KeyboardInterrupt:
+            user_quit()
+
         print('')
         print('Melanjutkan program...')
