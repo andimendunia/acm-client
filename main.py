@@ -11,27 +11,38 @@ with open('config.json', 'r') as config_file:
 
     api_url             = config.get('api_url', 'http://localhost/api/ins-acm-metrics')
     baud_rate           = config.get('baud_rate', 9600)
-    device_id           = config.get('device_id', 'USB\\VID_1A86&PID_7523')
+    device_name         = config.get('device_name', 'USB-SERIAL CH340')
     line                = config.get('line', 'TEST')
     duration_seconds    = config.get('duration_seconds', 60)
     serial_port         = config.get('serial_port', 'COM3')
     sleep_seconds       = config.get('sleep_seconds', 1)
+
+instance_id = ""
 
 print('')
 print('-----------------------------------')
 print('Program main.py berjalan.')
 print('-----------------------------------')
 print('')
-print('Berikut konfigurasi yang terbaca:')
+print('Konfigurasi aplikasi:')
 print('')
 print(' •  api_url          : ' + str(api_url))
 print(' •  baud_rate        : ' + str(baud_rate))
-print(' •  device_id        : ' + str(device_id)) #test
+print(' •  device_name      : ' + str(device_name)) #test
 print(' •  line             : ' + str(line))
 print(' •  duration_seconds : ' + str(duration_seconds))
 print(' •  serial_port      : ' + str(serial_port))
 print(' •  sleep_seconds    : ' + str(sleep_seconds))
 print('')
+
+def get_instance_id():
+    name = f"{device_name} ({serial_port})"
+    ps_command = f"""
+    $device = Get-PnpDevice -PresentOnly | Where-Object {{ $_.Name -eq "{name}" }} | Select-Object -First 1 InstanceId
+    $device.InstanceId
+    """
+    process = subprocess.run(["powershell", "-Command", ps_command], capture_output=True, text=True)
+    return process.stdout.strip()
 
 def collect_data():
     data = []  # List to store received data
@@ -52,16 +63,24 @@ def collect_data():
             print('', end="\r")
         else:
             data.append(data_dict)  # Add received data to the list
-            print(data_dict, end="\r")  # Print received data
+            print(data_dict, end="\r")  # Print receivgied data
     return data
 
 def restart_device():
-    subprocess.Popen(["pnputil", "/disable-device", "/deviceid", device_id])
-    time.sleep(10)
-    subprocess.Popen(["pnputil", "/enable-device", "/deviceid", device_id])
+    print('Simulasi restart...')
+    time.sleep
+    pass
 
 while True:
     try:
+        if instance_id == "":
+            print('Mendapatkan instance_id...')
+            instance_id = get_instance_id()
+            if instance_id == "":
+                raise ValueError("Gagal mendapatkan instance_id")
+            else:
+                print(f"instance_id: {instance_id}")
+
         print('Membuka komunikasi serial...')
         try:
             ser = serial.Serial(serial_port, baud_rate, timeout=30)  
