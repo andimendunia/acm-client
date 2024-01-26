@@ -4,5 +4,5 @@
     "line": "TEST",
     "duration_seconds": 300,
     "serial_port": "COM3",
-    "sleep_seconds": 300
+    "sleep_seconds": 10
 }

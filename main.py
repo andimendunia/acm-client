@@ -75,6 +75,7 @@ while True:
     try:
         if instance_id == "":
             print('Mendapatkan instance_id...')
+            print('')
             instance_id = get_instance_id()
             if instance_id == "":
                 raise ValueError("Gagal mendapatkan instance_id")
