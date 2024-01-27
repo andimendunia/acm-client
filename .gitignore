@@ -1,2 +1,2 @@
-# Ignore error log file
-error.log
+# Ignore log folder
+log

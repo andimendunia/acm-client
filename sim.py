@@ -16,4 +16,4 @@ def simulate_serial_data(port, baudrate=9600, interval=1):
         print("Stopped.")
         ser.close()
 
-simulate_serial_data('COM4')  # Replace 'COMx' with your COM port
+simulate_serial_data('COM11')  # Replace 'COMx' with your COM port

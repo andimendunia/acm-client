@@ -1,8 +1,0 @@
-{
-    "api_url": "http://172.70.87.101/api/ins-acm-metrics",
-    "baud_rate": 9600,
-    "line": "TEST",
-    "duration_seconds": 300,
-    "serial_port": "COM3",
-    "sleep_seconds": 300
-}
