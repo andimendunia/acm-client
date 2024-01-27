@@ -1,2 +1,4 @@
-# Ignore log folder
+# Ignore log folder and exe creation (dist/build)
 log
+dist
+build
