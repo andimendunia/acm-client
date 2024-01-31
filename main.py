@@ -16,8 +16,8 @@ print('')
 # Konfigurasi sistem logging
 log_dir     = "log"
 os.makedirs(log_dir, exist_ok=True)
-today       = datetime.datetime.now().day
-log_file    = f"{log_dir}/{today}.log"
+now         = datetime.datetime.now()
+log_file    = f"{log_dir}/{now.strftime('%Y%m%d')}.log"
 
 logging.basicConfig(
     level=logging.INFO,
@@ -115,22 +115,22 @@ def close_serial():
 
 def user_quit():
     close_serial()
-    print('Program dihentikan oleh user. Selamat tinggal!')
+    logging.info('Program dihentikan oleh user. Selamat tinggal!')
     time.sleep(3)
     quit()
 
 while True:
     try:
         if not instance_id:
-            print('Mendapatkan instance_id...')
+            logging.info('Mendapatkan instance_id...')
             instance_id = get_instance_id()
 
             if not instance_id:
                 raise ValueError('Gagal mendapatkan instance_id')
             else:
-                print(f"instance_id: {instance_id}")
+                logging.info(f"instance_id: {instance_id}")
 
-        print('Membuka serial...')
+        logging.info('Membuka serial...')
         try:
             logging.debug('Start opening serial...')
             ser = serial.Serial(serial_port, baud_rate, timeout=30)  
@@ -140,7 +140,7 @@ while True:
             restart_device()
             
         else: 
-            print('Mendengar serial...')
+            logging.info('Mendengar serial...')
 
             collected = collect_data()
             print('')
@@ -152,12 +152,12 @@ while True:
             payload = {'data': end }
             close_serial()
 
-            print('Mengirim data terakhir ke server...')
+            logging.info('Mengirim data terakhir ke server...')
             response = requests.post(api_url, json=payload)
 
             # 200 artinya OK
             if response.status_code == 200:
-                print('Balasan dari server: ' + str(response.content))
+                logging.info('Balasan dari server: ' + str(response.content))
 
             else:
                 logging.warning('Server: ' + str(response.status_code))
@@ -181,4 +181,4 @@ while True:
             user_quit()
 
         print('')
-        print('Melanjutkan program...')
+        logging.info('Melanjutkan program...')
