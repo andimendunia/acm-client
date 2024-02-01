@@ -146,22 +146,24 @@ while True:
             print('')
             logging.info('Jumlah data yang di dengar: ' + str(len(collected)) )
 
+            if len(collected) == 0:
+                restart_device()
+            else: 
+                # Send last data via HTTP API
+                end = collected[-1:]
+                payload = {'data': end }
+                close_serial()
 
-            # Send last data via HTTP API
-            end = collected[-1:]
-            payload = {'data': end }
-            close_serial()
+                logging.info('Mengirim data terakhir ke server...')
+                response = requests.post(api_url, json=payload)
 
-            logging.info('Mengirim data terakhir ke server...')
-            response = requests.post(api_url, json=payload)
+                # 200 artinya OK
+                if response.status_code == 200:
+                    logging.info('Balasan dari server: ' + str(response.content))
 
-            # 200 artinya OK
-            if response.status_code == 200:
-                logging.info('Balasan dari server: ' + str(response.content))
-
-            else:
-                logging.warning('Server: ' + str(response.status_code))
-            print('')
+                else:
+                    logging.warning('Server: ' + str(response.status_code))
+                print('')
 
     except serial.SerialTimeoutException: #test
         logging.exception('Durasi mendengar serial mencapai timeout')
