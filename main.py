@@ -109,6 +109,7 @@ def restart_device():
 
 def close_serial():
     try:
+        logging.info('Menutup serial...')
         ser.close()
     except Exception as e:
         logging.warning(str(e)) 
