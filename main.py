@@ -138,6 +138,7 @@ while True:
         except Exception as e:
             logging.debug('Hit exception on try opening serial')
             logging.error(str(e)) 
+            close_serial()
             restart_device()
             
         else: 
@@ -148,6 +149,7 @@ while True:
             logging.info('Jumlah data yang di dengar: ' + str(len(collected)) )
 
             if len(collected) == 0:
+                close_serial()
                 restart_device()
             else: 
                 # Send last data via HTTP API
@@ -168,6 +170,7 @@ while True:
 
     except serial.SerialTimeoutException: #test
         logging.exception('Durasi mendengar serial mencapai timeout')
+        close_serial()
         restart_device()
 
     except KeyboardInterrupt:
