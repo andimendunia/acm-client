@@ -40,23 +40,25 @@ except:
     pass
 
 with open('config.json', 'r') as config_file:
-    config              = json.load(config_file)
-    api_url             = config.get('api_url', 'http://localhost/api/ins-acm-metrics')
-    baud_rate           = config.get('baud_rate', 9600)
-    device_name         = config.get('device_name', 'USB-SERIAL CH340')
-    line                = config.get('line', 'TEST')
-    duration_seconds    = config.get('duration_seconds', 10)
-    serial_port         = config.get('serial_port', 'COM3')
-    sleep_seconds       = config.get('sleep_seconds', 10)
+    config                  = json.load(config_file)
+    api_url                 = config.get('api_url', 'http://172.70.87.101/api/ins-acm-metrics')
+    baud_rate               = config.get('baud_rate', 9600)
+    device_name             = config.get('device_name', 'USB-SERIAL CH340')
+    line                    = config.get('line', 'TEST')
+    duration_seconds        = config.get('duration_seconds', 10)
+    serial_port             = config.get('serial_port', 'COM10')
+    sleep_seconds           = config.get('sleep_seconds', 300)
+    restart_device_enabled  = config.get('restart_device_enabled', False)
 
 print('')
-print(' •  api_url          : ' + str(api_url))
-print(' •  baud_rate        : ' + str(baud_rate))
-print(' •  device_name      : ' + str(device_name)) #test
-print(' •  line             : ' + str(line))
-print(' •  duration_seconds : ' + str(duration_seconds))
-print(' •  serial_port      : ' + str(serial_port))
-print(' •  sleep_seconds    : ' + str(sleep_seconds))
+print(' •  api_url                  : ' + str(api_url))
+print(' •  baud_rate                : ' + str(baud_rate))
+print(' •  device_name              : ' + str(device_name))
+print(' •  line                     : ' + str(line))
+print(' •  duration_seconds         : ' + str(duration_seconds))
+print(' •  serial_port              : ' + str(serial_port))
+print(' •  sleep_seconds            : ' + str(sleep_seconds))
+print(' •  restart_device_enabled   : ' + str(restart_device_enabled))
 print('')
 
 def get_instance_id():
@@ -82,6 +84,7 @@ def collect_data():
                 'rate_min': int(data_list[0]),
                 'rate_max': int(data_list[1]),
                 'rate_act': int(data_list[2]),
+                'length_data': len(data_line),
             }  
         except Exception as e:
             print('', end="\r")
@@ -92,7 +95,12 @@ def collect_data():
 
 def restart_device():
     logging.debug('Hit restart device function')
-    if instance_id:
+
+    if not restart_device:
+        logging.info('Fitur restart_device tidak dieksekusi karena dimatikan')
+        time.sleep(3)
+
+    elif instance_id:
         disable_command = f"Disable-PnpDevice -InstanceId \"{instance_id}\" -Confirm:$false"
         enable_command  = f"Enable-PnpDevice -InstanceId \"{instance_id}\" -Confirm:$false"
 
@@ -120,70 +128,71 @@ def user_quit():
     time.sleep(3)
     quit()
 
+
+# Mendapatkan instance_id untuk restart_device
+if not instance_id and restart_device_enabled:
+    logging.info('Mendapatkan instance_id...')
+    instance_id = get_instance_id()
+
+    if not instance_id:
+        logging.error('Gagal mendapatkan instance_id')
+        time.sleep(3)
+        quit()
+    else:
+        logging.info(f"instance_id: {instance_id}")
+
+else:
+    logging.info('Fitur restart_device dimatikan')
+
+# Mulai membuka serial
+logging.info('Membuka serial...')
+ser = serial.Serial(serial_port, baud_rate, timeout=30)  
+logging.info('Mendengar serial...')
+print('')
+
+
 while True:
     try:
-        if not instance_id:
-            logging.info('Mendapatkan instance_id...')
-            instance_id = get_instance_id()
+        collected = collect_data()
+        print('')
+        logging.info('Jumlah data yang di dengar: ' + str(len(collected)) )
 
-            if not instance_id:
-                raise ValueError('Gagal mendapatkan instance_id')
-            else:
-                logging.info(f"instance_id: {instance_id}")
-
-        logging.info('Membuka serial...')
-        try:
-            logging.debug('Start opening serial...')
-            ser = serial.Serial(serial_port, baud_rate, timeout=30)  
-        except Exception as e:
-            logging.debug('Hit exception on try opening serial')
-            logging.error(str(e)) 
-            close_serial()
+        if len(collected) == 0:
             restart_device()
-            
         else: 
-            logging.info('Mendengar serial...')
+            # Send last data via HTTP API
+            end = collected[-1:]
+            payload = {'data': end }
 
-            collected = collect_data()
-            print('')
-            logging.info('Jumlah data yang di dengar: ' + str(len(collected)) )
+            logging.info('Mengirim data terakhir ke server...')
+            response = requests.post(api_url, json=payload)
 
-            if len(collected) == 0:
-                close_serial()
-                restart_device()
-            else: 
-                # Send last data via HTTP API
-                end = collected[-1:]
-                payload = {'data': end }
-                close_serial()
+            # 200 artinya OK
+            if response.status_code == 200:
+                logging.info('Balasan dari server: ' + str(response.content))
 
-                logging.info('Mengirim data terakhir ke server...')
-                response = requests.post(api_url, json=payload)
+            else:
+                logging.warning('Server: ' + str(response.status_code))
+            print('')            
 
-                # 200 artinya OK
-                if response.status_code == 200:
-                    logging.info('Balasan dari server: ' + str(response.content))
-
-                else:
-                    logging.warning('Server: ' + str(response.status_code))
-                print('')
-
-    except serial.SerialTimeoutException: #test
+    except serial.SerialTimeoutException:
+        print('')
         logging.exception('Durasi mendengar serial mencapai timeout')
-        close_serial()
         restart_device()
 
     except KeyboardInterrupt:
+        print('')
         user_quit()
 
     except Exception as e:
+        print('')
         logging.error(str(e))
-        close_serial()
         logging.info('Program tertidur selama ' + str(sleep_seconds) + ' detik...')
 
         try:
             time.sleep(sleep_seconds)  # Wait before retrying
         except KeyboardInterrupt:
+            print('')
             user_quit()
 
         print('')
