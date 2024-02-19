@@ -6,12 +6,15 @@ import datetime
 import subprocess
 import logging
 import os
+import wx
 
 print('')
 print('-----------------------------------')
 print('Program main.py berjalan.')
 print('-----------------------------------')
 print('')
+
+app = wx.App()
 
 # Konfigurasi sistem logging
 log_dir     = "log"
@@ -126,7 +129,7 @@ def user_quit():
     close_serial()
     logging.info('Program dihentikan oleh user. Selamat tinggal!')
     time.sleep(3)
-    quit()
+    os._exit(0)
 
 
 # Mendapatkan instance_id untuk restart_device
@@ -136,19 +139,29 @@ if not instance_id and restart_device_enabled:
 
     if not instance_id:
         logging.error('Gagal mendapatkan instance_id')
-        time.sleep(3)
-        quit()
+        message_box = wx.MessageDialog(None, "Gagal mendapatkan instance_id.", "acm-py", wx.ICON_ERROR)
+        response = message_box.ShowModal()
+        message_box.Destroy()
+        os._exit(0)
     else:
         logging.info(f"instance_id: {instance_id}")
 
 else:
     logging.info('Fitur restart_device dimatikan')
 
-# Mulai membuka serial
-logging.info('Membuka serial...')
-ser = serial.Serial(serial_port, baud_rate, timeout=30)  
-logging.info('Mendengar serial...')
-print('')
+try:
+    # Mulai membuka serial
+    logging.info('Membuka serial...')
+    ser = serial.Serial(serial_port, baud_rate, timeout=30)  
+    logging.info('Mendengar serial...')
+    print('')
+except Exception as e:
+    print('')
+    logging.error(str(e))
+    message_box = wx.MessageDialog(None, f"Ada masalah ketika membuka serial.\n\n{e}", "acm-py", wx.ICON_ERROR)
+    response = message_box.ShowModal()
+    message_box.Destroy()
+    os._exit(0)
 
 
 while True:
@@ -182,7 +195,7 @@ while True:
 
     except KeyboardInterrupt:
         print('')
-        user_quit()
+        os._exit(0)
 
     except Exception as e:
         print('')
@@ -193,7 +206,7 @@ while True:
             time.sleep(sleep_seconds)  # Wait before retrying
         except KeyboardInterrupt:
             print('')
-            user_quit()
+            os._exit(0)
 
         print('')
         logging.info('Melanjutkan program...')
