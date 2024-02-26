@@ -44,7 +44,7 @@ except:
 
 with open('config.json', 'r') as config_file:
     config                  = json.load(config_file)
-    api_url                 = config.get('api_url', 'http://172.70.87.101/api/ins-acm-metrics')
+    api_url                 = config.get('api_url', 'http://172.70.52.150/api/ins-acm-metrics')
     baud_rate               = config.get('baud_rate', 9600)
     device_name             = config.get('device_name', 'USB-SERIAL CH340')
     line                    = config.get('line', 'TEST')
@@ -175,7 +175,28 @@ while True:
         else: 
             # Send last data via HTTP API
             end = collected[-1:]
-            payload = {'data': end }
+
+            sum_rate_act = 0
+            count = 0
+
+            # Iterate over the list and sum up the rate_act values
+            for item in collected:
+                sum_rate_act += item['rate_act']
+                count += 1
+
+            # Calculate the average
+            average_rate_act = sum_rate_act / count
+
+            avg = [{
+                'line': line, #ambil terakhir
+                'dt_client': now.strftime('%Y-%m-%d %H:%M:%S'), #ambil terakhir
+                'rate_min': int(end[0].rate_min), #ambil terakhir
+                'rate_max': int(end[0].rate_max), #ambil terakhir
+                'rate_act': int(average_rate_act), #ambil rata-rata
+                'length_data': len(end[0].length_data), #ambil terakhir
+            }]
+
+            payload = {'data': avg }
 
             logging.info('Mengirim data terakhir ke server...')
             response = requests.post(api_url, json=payload)
