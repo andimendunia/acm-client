@@ -190,11 +190,12 @@ while True:
             avg = [{
                 'line': line, #ambil terakhir
                 'dt_client': now.strftime('%Y-%m-%d %H:%M:%S'), #ambil terakhir
-                'rate_min': int(end[0].rate_min), #ambil terakhir
-                'rate_max': int(end[0].rate_max), #ambil terakhir
+                'rate_min': int(end[0]["rate_min"]), #ambil terakhir
+                'rate_max': int(end[0]["rate_max"]), #ambil terakhir
                 'rate_act': int(average_rate_act), #ambil rata-rata
-                'length_data': len(end[0].length_data), #ambil terakhir
             }]
+
+            print(avg)
 
             payload = {'data': avg }
 
